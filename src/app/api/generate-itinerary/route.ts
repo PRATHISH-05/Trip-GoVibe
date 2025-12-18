@@ -57,7 +57,7 @@ function generateMockItinerary(city: string, days: number, budget: number, start
     'bangalore': [
       { name: 'Lalbagh Botanical Garden', type: 'GARDEN', distance: 0, time: 2, fee: 50, score: 90, lat: 12.9507, lon: 77.5848, desc: 'Historic 240-acre garden with glass house and diverse plant species' },
       { name: 'Bangalore Palace', type: 'VIEWPOINT', distance: 5, time: 2, fee: 280, score: 88, lat: 12.9987, lon: 77.5920, desc: 'Tudor-style palace with Victorian architecture and royal artifacts' },
-      { name: 'Nandi Hills', type: 'HILL_STATION', distance: 60, time: 4, fee: 50, score: 92, lat: 13.3703, lon: 77.6838, desc: 'Ancient hill fortress with breathtaking sunrise views and Tipu's Drop' },
+      { name: 'Nandi Hills', type: 'HILL_STATION', distance: 60, time: 4, fee: 50, score: 92, lat: 13.3703, lon: 77.6838, desc: 'Ancient hill fortress with breathtaking sunrise views and Tipus Drop' },
       { name: 'ISKCON Temple', type: 'TEMPLE', distance: 8, time: 2, fee: 0, score: 85, lat: 13.0096, lon: 77.5502, desc: 'Modern Krishna temple with stunning architecture and spiritual ambiance' },
     ],
     'goa': [
