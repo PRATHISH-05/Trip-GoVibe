@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Core entity: Places (nodes in trip graph)
+model Place {
+  id          String   @id @default(cuid())
+  name        String
+  nameLocal   String?
+  description String
+  type        String   // "TEMPLE", "WATERFALL", etc
+  
+  district    String
+  state       String   @default("India")
+  lat         Float
+  lon         Float
+  
+  // Seasonal intelligence (stored as JSON strings)
+  bestSeasons   String   @default("")  // "JAN,DEC,NOV"
+  avoidSeasons  String   @default("")  // "JUN,JUL,AUG"
+  seasonScore   String   @default("{}")
+  
+  // Budget
+  budgetTier    String   @default("MEDIUM")
+  entryFee      Float    @default(0)
+  avgStayCost   Float    @default(500)
+  avgFoodCost   Float    @default(300)
+  
+  // Personality scores (0-100)
+  adventureScore Float  @default(50)
+  spiritualScore Float  @default(50)
+  instagramScore Float  @default(50)
+  foodieScore    Float  @default(50)
+  natureScore    Float  @default(50)
+  
+  // Trip type scores (0-100)
+  familyScore   Float  @default(50)
+  boysScore     Float  @default(50)
+  coupleScore   Float  @default(50)
+  soloScore     Float  @default(50)
+  
+  // Discovery
+  isHiddenGem   Boolean  @default(false)
+  isFamous      Boolean  @default(false)
+  tags          String   @default("")  // "temple,waterfall,viewpoint"
+  
+  // Crowd
+  crowdCalendar String   @default("{}")
+  
+  // Metadata
+  openingHours  String?
+  closedDays    String   @default("")
+  bestTimeOfDay String?
+  minHoursNeeded Float   @default(2)
+  imageUrl      String?
+  
+  // Relations
+  routesFrom    Route[]  @relation("from")
+  routesTo      Route[]  @relation("to")
+  placeTags     PlaceTag[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([district])
+  @@index([type])
+  @@index([isHiddenGem])
+}
+
+// Smart metadata for filtering + AI arrangement
+model PlaceTag {
+  id              String   @id @default(cuid())
+  placeId         String
+  place           Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  
+  season          String   @default("all")        // "summer,winter,monsoon,all"
+  budgetLevel     String   @default("medium")     // "low,medium,high"
+  idealDays       String   @default("1,2,3")      // "1,2,3,4"
+  tripType        String   @default("family,couple,friends,solo")  // comma-separated
+  popularity      Int      @default(5)            // 1-10 scale
+  minHoursNeeded  Float    @default(2)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([placeId])
+}
+
+// Graph edges
+model Route {
+  id              String   @id @default(cuid())
+  fromPlaceId     String
+  toPlaceId       String
+  
+  fromPlace       Place    @relation("from", fields: [fromPlaceId], references: [id], onDelete: Cascade)
+  toPlace         Place    @relation("to", fields: [toPlaceId], references: [id], onDelete: Cascade)
+  
+  distanceKm      Float
+  durationMinutes Float
+  transportModes  String   @default("")  // "bus,train,cab"
+  estimatedCost   Float
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([fromPlaceId, toPlaceId])
+}
+
+// User trips
+model Itinerary {
+  id              String     @id @default(cuid())
+  title           String     @default("My Trip")
+  
+  originCity      String
+  budget          Float
+  numDays         Int
+  startDate       DateTime?
+  numPeople       Int        @default(1)
+  tripType        String     // "FAMILY", "COUPLE", etc
+  personality     String     @default("")  // "ADVENTURE,SPIRITUAL"
+  showHiddenGems  Boolean    @default(false)
+  
+  totalScore      Float      @default(0)
+  totalDistance   Float      @default(0)
+  totalCost       Float      @default(0)
+  costBreakdown   String     @default("{}")
+  
+  weatherAlert    String?
+  hasPlanB        Boolean    @default(false)
+  
+  days            ItineraryDay[]
+  
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  
+  @@index([originCity])
+}
+
+// Daily schedules
+model ItineraryDay {
+  id            String     @id @default(cuid())
+  
+  itineraryId   String
+  itinerary     Itinerary  @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  
+  dayNumber     Int
+  date          DateTime?
+  
+  sequence      String     @default("[]")  // JSON as string
+  placeIds      String     @default("")    // "id1,id2,id3"
+  
+  dayCost       Float      @default(0)
+  travelTime    Float      @default(0)
+  notes         String?
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  @@unique([itineraryId, dayNumber])
+}
