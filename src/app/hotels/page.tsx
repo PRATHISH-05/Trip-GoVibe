@@ -361,7 +361,7 @@ export default function HotelsPage() {
                         <div className="mb-4">
                           <p className="text-gray-300 text-sm mb-2">Amenities:</p>
                           <div className="flex flex-wrap gap-2">
-                            {hotel.amenities.slice(0, 3).map((amenity, i) => (
+                            {hotel.amenities.slice(0, 3).map((amenity: string, i: number) => (
                               <span key={i} className="px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded text-xs">
                                 {amenity}
                               </span>
